@@ -147,9 +147,10 @@ def combine_hv_matches(hdic, vdic):
 
 def mix(match1, match2):
     combined = []
+    
     for arr1 in match1:
         for arr2 in match2:
-            if any(x in arr1 for x in arr2):
+            if any(x in arr1 for x in arr2): # if match found
                 new = []
                 new.extend(arr1)
                 new.extend(arr2)
@@ -160,11 +161,20 @@ def mix(match1, match2):
                 if arr2 in combined:
                     combined.remove(arr2)
             else:
-                combined.append(arr1)
-                combined.append(arr2)
-    combined_set = set(map(tuple,combined))
-    b = list(map(list,combined_set))
-    return b
+                if arr1 not in combined:
+                    combined.append(arr1)
+                if arr2 not in combined:
+                    combined.append(arr2)
+    
+    for i in range(len(combined) - 1):
+        for j in range(i + 1, (len(combined))):
+            if any(m in combined[i] for m in combined[j]):
+                combined[i].extend(combined.pop(j))
+    
+    for idx in range(len(combined)):
+        combined[idx] = list(dict.fromkeys(combined[idx]))
+
+    return combined
 
 def touching(orb1, orb2):
     row_end = [5, 11, 17, 23, 29]
@@ -173,23 +183,60 @@ def touching(orb1, orb2):
     else:
         return False
 
+def clear_matches(board, matches):
+    # b = board
+    # m = matches
+    remove = []
+    
+    for key in matches:
+        for inner_arr in matches[key]:
+            for num in inner_arr:
+                remove.append(num)
+
+    for num in remove:
+        board[num] = 'x'
+
+    print(gui_board(board))
+
+    while x_on_board(board):
+        push_down(board)
+
+def x_on_board(the_board):
+    for orb in the_board:
+        if orb == 'x':
+            return True
+    
+    return False
+
+def push_down(x_board):
+    for i in range(len(x_board)):
+        if x_board[i] != 'x':
+            for j in range(i + 6, len(x_board), 6):
+                
+
+def columns(board, idx):
+    col_arr = []
+
+
 def main():
-    my = 'RBBBBHHLHDDDDDDRHRDLDLBDDRDHHG'
+    my = 'BBBLRHBBBDDDDDDHBDDLDHBRDRDHBG'
     new_board = []
     if my == '':
         new_board = start_board()
     else:
         for letter in my:
             new_board.append(letter.lower())
-    
+    print(new_board)
     print(gui_board(new_board))
 
     h_matches = horizontal_matches(new_board)
     v_matches = vertical_matches(new_board)
     print(h_matches)
     print(v_matches)
-    print(combine_hv_matches(h_matches, v_matches))
+    combined_matches = combine_hv_matches(h_matches, v_matches)
+    print(combined_matches)
 
+    clear_matches(new_board, combined_matches)
     # check for matches of each color in each ROW (HORIZONTAL FIRST)
         # return a list of dictionaries, each dic being color
     # check each row and the row under it for any touching orbs
