@@ -198,8 +198,11 @@ def clear_matches(board, matches):
 
     print(gui_board(board))
 
-    while x_on_board(board):
-        push_down(board)
+    # while x_on_board(board):
+    push_down(board)
+    print(gui_board(board))
+    replace_x(board)
+    print(gui_board(board))
 
 def x_on_board(the_board):
     for orb in the_board:
@@ -211,12 +214,21 @@ def x_on_board(the_board):
 def push_down(x_board):
     for i in range(len(x_board)):
         if x_board[i] != 'x':
+            move = i
+            copy = x_board[i]
             for j in range(i + 6, len(x_board), 6):
-                
+                if x_board[j] == 'x':
+                    move = j
+                    x_board[i] = 'x'
+                else:
+                    break
+            x_board[move] = copy
 
-def columns(board, idx):
-    col_arr = []
-
+def replace_x(x_board):
+    colors = ['r', 'g', 'b', 'l', 'd', 'h']
+    for i in range(len(x_board)):
+        if x_board[i] == 'x':
+            x_board[i] = random.choice(colors)
 
 def main():
     my = 'BBBLRHBBBDDDDDDHBDDLDHBRDRDHBG'
@@ -237,11 +249,5 @@ def main():
     print(combined_matches)
 
     clear_matches(new_board, combined_matches)
-    # check for matches of each color in each ROW (HORIZONTAL FIRST)
-        # return a list of dictionaries, each dic being color
-    # check each row and the row under it for any touching orbs
-
-    # return groups of matches
-
 
 main()
