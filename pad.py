@@ -12,8 +12,17 @@ def gui_board(board):
     toSend = ''
     for i in range(len(board)):
         toSend += board[i] + ' '
-        if (i + 1) % 6 == 0:
-            toSend += '\n'
+        if i == 5:
+            toSend += '  |5' + '\n'
+        elif i == 11:
+            toSend += '  |4' + '\n'
+        elif i == 17:
+            toSend += '  |3' + '\n'
+        elif i == 23:
+            toSend += '  |2' + '\n'
+        elif i == 29:
+            toSend += '  |1' + '\n'
+    toSend += '___________' + '\n' + 'A B C D E F'
     return toSend
 
 def analyze(matches):
@@ -101,7 +110,6 @@ def vertical_matches(board):
         uniq = list(dict.fromkeys(matches[key]))
         matches[key] = uniq
     
-    # print(matches)
 
     for key in matches:
         groups = []
@@ -183,9 +191,21 @@ def touching(orb1, orb2):
     else:
         return False
 
+def matches_exist(board):
+    h_matches = horizontal_matches(board)
+    v_matches = vertical_matches(board)
+    combined_matches = combine_hv_matches(h_matches, v_matches)
+    # print(combined_matches)
+
+    for key in combined_matches:
+        if len(combined_matches[key]) > 0:
+            return [True, combined_matches]
+    
+    return [False, combined_matches]
+
+
 def clear_matches(board, matches):
-    # b = board
-    # m = matches
+
     remove = []
     
     for key in matches:
@@ -196,13 +216,11 @@ def clear_matches(board, matches):
     for num in remove:
         board[num] = 'x'
 
-    print(gui_board(board))
-
-    # while x_on_board(board):
     push_down(board)
-    print(gui_board(board))
-    replace_x(board)
-    print(gui_board(board))
+    replaced_board = replace_x(board)
+    
+    return replaced_board
+
 
 def x_on_board(the_board):
     for orb in the_board:
@@ -230,24 +248,103 @@ def replace_x(x_board):
         if x_board[i] == 'x':
             x_board[i] = random.choice(colors)
 
-def main():
-    my = 'BBBLRHBBBDDDDDDHBDDLDHBRDRDHBG'
+    return x_board
+
+def random_coordinates(the_board):
+    random_int = random.randint(0, 29)
+    random_orb = the_board[random_int]
+
+    if random_int >= 0 and random_int < 6:
+        number = '5'
+    elif random_int >= 6 and random_int < 12:
+        number = '4'
+    elif random_int >= 12 and random_int < 18:
+        number = '3'
+    elif random_int >= 18 and random_int < 24:
+        number = '2'
+    elif random_int >= 24 and random_int < 30:
+        number = '1'
+
+    if random_int % 6 == 0:
+        letter = 'A'
+    elif random_int % 6 == 1:
+        letter = 'B'
+    elif random_int % 6 == 2:
+        letter = 'C'
+    elif random_int % 6 == 3:
+        letter = 'D'
+    elif random_int % 6 == 4:
+        letter = 'E'
+    elif random_int % 6 == 5:
+        letter = 'F'
+    
+    coordinate = letter + number
+    return coordinate, random_orb
+
+def invalid_coordinates(coords):
+    if len(coords) > 2 or len(coords) < 2:
+        return True
+    if not coords[0].isalpha():
+        return True
+    if not coords[1].isnumeric():
+        return True
+    if coords[0].upper() != 'A' and coords[0].upper() != 'B' and coords[0].upper() != 'C' and coords[0].upper() != 'D' and coords[0].upper() != 'E' and coords[0].upper() != 'F':
+        return True
+    if int(coords[1]) > 5 or int(coords[1]) < 1:
+        return True
+    return False
+
+def initialize_board():
+    my = ''
     new_board = []
     if my == '':
         new_board = start_board()
     else:
         for letter in my:
             new_board.append(letter.lower())
-    print(new_board)
-    print(gui_board(new_board))
+    
+    return new_board
 
-    h_matches = horizontal_matches(new_board)
-    v_matches = vertical_matches(new_board)
-    print(h_matches)
-    print(v_matches)
-    combined_matches = combine_hv_matches(h_matches, v_matches)
-    print(combined_matches)
 
-    clear_matches(new_board, combined_matches)
+def main():
+    board = initialize_board()
+
+    while matches_exist(board)[0] == True:
+        board = clear_matches(board, matches_exist(board)[1])
+    print()
+    print('Welcome to my Puzzle & Dragons replica program built with Python.')
+    print('Beneath is the board which you will be able to play PAD like normal, just in a much uglier fashion.')
+    print('First you need to select the orb which you want to pick up. The board is shown with chessboard coordinates.')
+    print()
+    rand_coor, rand_orb = random_coordinates(board)
+    print(gui_board(board))
+    print()
+    print(f'For example, {rand_coor} is {rand_orb}')
+
+    user_coordinates = input("Enter the coordinates of the orb you wish to select (capitalization doesn't matter): ")
+    while invalid_coordinates(user_coordinates):
+        user_coordinates = input('Invalid coordinates. Try again: ')
+
+    
 
 main()
+
+'''
+general outline of code:
+
+
+--------------------------------------------
+1. main will initialize a board in an [array]
+--------------------------------------------
+
+->
+
+--------------------------------------------
+MATCH EXIST LOOP:
+    if matches exist, return [true, matches dictionary]
+    otherwise return [false, matches dictionary]
+    
+    while matches exist:
+        
+
+'''
